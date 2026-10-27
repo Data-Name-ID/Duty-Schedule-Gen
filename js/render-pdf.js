@@ -3,7 +3,7 @@ import { readParams } from "./params.js";
 import {
   MONTHS_RU, getWeekdayLabel,
   parseRooms, buildFullSchedule, formatRoom,
-  calcRows, calcRowGap, signedParams, signLayout, SIGN_NO_ROOM,
+  calcRows, calcRowGap, signedParams, signLayout,
 } from "./schedule.js";
 import { FONTS, getFontBytes } from "./fonts.js";
 import {
@@ -133,14 +133,6 @@ export async function exportPdf() {
       page.drawText(text, { x, y, size, font, color, characterSpacing: cs });
     }
 
-    const signRoomW = P.sign.on
-      ? Math.max(...rooms.map(r => textWidth(fontRoom, formatRoom(r, P.room, rooms), P.room.size, P.room.tracking)))
-      : 0;
-    if (P.sign.on) {
-      const s = signLayout(P, 0, CELL_W, signRoomW);
-      if (s.x2 <= s.x1) log(SIGN_NO_ROOM, "err");
-    }
-
     for (let idx = fromIdx; idx <= toIdx; idx++) {
       const year  = Math.floor(idx / 12);
       const month = idx % 12;
@@ -211,14 +203,13 @@ export async function exportPdf() {
           const roomStr = formatRoom(room, P.room, rooms);
           const roomFont   = isCurrent ? fontRoom : fontRoomOther;
           const roomColor  = isCurrent ? P.room.color : P.room.colorOther;
-          const roomY      = yTopRoom + P.room.h/2 + P.room.dy - P.room.size * 0.35;
+          let roomY      = yTopRoom + P.room.h/2 + P.room.dy - P.room.size * 0.35;
           let roomAlign = P.room.align || "center";
           let roomLeft  = x0 + P.room.dx;
+          let roomRight = x0 + CELL_W + P.room.dx;
           if (P.sign.on) {
-            const sign = signLayout(P, x0, CELL_W, signRoomW);
-            roomAlign = "left";
-            roomLeft = sign.roomX;
-            if (isCurrent && sign.x2 > sign.x1) {
+            const sign = signLayout(P, x0, CELL_W);
+            if (isCurrent) {
               page.drawLine({
                 start: { x: sign.x1, y: roomY },
                 end:   { x: sign.x2, y: roomY },
@@ -227,10 +218,13 @@ export async function exportPdf() {
                 dashArray: pdfDash(P.sign.dash, P.sign.w),
               });
             }
+            roomAlign = "right";
+            roomRight = sign.roomX;
+            roomY = dateY + 0.7 * (P.date.size - P.room.size);
           }
           drawAligned(page, roomFont, roomStr, P.room.size, P.room.tracking,
             rgb(roomColor.r, roomColor.g, roomColor.b),
-            roomLeft, x0 + CELL_W + P.room.dx, roomY, roomAlign);
+            roomLeft, roomRight, roomY, roomAlign);
         }
       }
 
@@ -276,8 +270,12 @@ export async function exportPdf() {
         const artW = artTextW + P.art.padX * 2;
         const artX = PAGE_W - artW - artRight;
         const artY = PAGE_H - artH - artTop;
+        const artTextX = P.art.x == null ? artX + P.art.padX
+                       : P.art.align === "center" ? P.art.x - artTextW / 2
+                       : P.art.align === "right" ? P.art.x - artTextW
+                       : P.art.x;
         page.drawText(P.art.text, {
-          x: artX + P.art.padX,
+          x: artTextX,
           y: artY + artH/2 - artSize * 0.35,
           size: artSize, font: fontArt,
           color: rgb(P.art.color.r, P.art.color.g, P.art.color.b),

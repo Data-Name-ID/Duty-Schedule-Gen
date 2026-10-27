@@ -120,7 +120,7 @@
 
         <div class="hint" style="margin-top:8px">4. Роспись дежурных</div>
         <div class="field"><label>Строка для росписи</label><input type="checkbox" id="pSignOn"></div>
-        <div class="hint">Номер комнаты сдвинется к левому краю ячейки, а справа от него в каждом дне месяца появится линия, на которой дежурный расписывается. Даты станут немного меньше, чтобы освободить место. Настройки — в «Дополнительных настройках дизайна».</div>
+        <div class="hint">Дата прижмётся к левому краю ячейки, номер комнаты — к правому, а внизу каждого дня месяца появится линия, на которой дежурный расписывается. Даты станут немного меньше, чтобы освободить место, а дни недели переедут из-под сетки наверх. Настройки — в «Дополнительных настройках дизайна».</div>
       </div>
     </details>
 
@@ -258,8 +258,8 @@
             <div class="signDeps">
               <div class="field"><label>Размер дат</label><input type="number" id="pSignDateScale" value="70" step="5" min="30" max="100"><span class="unit">%</span></div>
               <div class="hint">Чем меньше даты, тем больше места для росписи: верх цифр остаётся на месте, освобождается место под ними.</div>
-              <div class="field"><label>Отступ от краёв ячейки</label><input type="number" id="pSignPad" value="2" step="0.5" min="0"><span class="unit">мм</span></div>
-              <div class="hint">Слева — до номера комнаты, между номером и линией, справа — после линии.</div>
+              <div class="field"><label>Отступ от краёв ячейки</label><input type="number" id="pSignPad" value="4" step="0.5" min="0"><span class="unit">мм</span></div>
+              <div class="hint">От краёв ячейки до даты, номера комнаты и линии.</div>
               <div class="hint">Цвет — как у разделительных линий (раздел «Сетка»).</div>
               <div class="field"><label>Толщина</label><input type="number" id="pSignW" value="0.3" step="0.05" min="0"><span class="unit">мм</span></div>
               <div class="field"><label>Тип</label>

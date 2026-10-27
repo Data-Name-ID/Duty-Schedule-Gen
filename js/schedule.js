@@ -90,12 +90,32 @@ export function calcRowGap(rows, rowGapBase, cellH) {
 export function signedParams(P) {
   if (!P.sign.on) return P;
   const size = P.date.size * P.sign.dateScale / 100;
-  return { ...P, date: { ...P.date, size, dy: P.date.dy + 0.45 * (P.date.size - size) } };
+  const date = { ...P.date, size, dy: P.date.dy + 0.45 * (P.date.size - size), align: "left", dx: P.sign.pad };
+  const line = { ...P.line, horiz: false };
+  if (P.weekday.y >= P.page.h - P.grid.topMargin) return { ...P, date, line };
+  const gridBottom = P.grid.topMargin + 5 * (P.date.h + P.room.h) + 4 * P.grid.rowGap;
+  const weekdayY = P.page.h - P.grid.topMargin - date.h / 2 + date.dy + 0.45 * size + P.weekday.size;
+  const spaceAbove = P.page.h - weekdayY - 0.7 * P.weekday.size;
+  const spaceBelow = P.page.h - P.bar.h - gridBottom;
+  const shift = Math.max(0, (spaceBelow - spaceAbove) / 2);
+  const barAlign = P.bar.line2Align || "left";
+  const barX = barAlign === "right" ? P.page.w - P.bar.dx : barAlign === "center" ? P.page.w / 2 : P.bar.dx;
+  const line2Y = P.bar.h / 2 + P.bar.dy - P.bar.line1Size * P.bar.lineGap / 2;
+  const artY = Math.max(P.art.size, line2Y - 0.6 * P.bar.line2Size - 0.6 * P.art.size);
+  return {
+    ...P,
+    date,
+    grid: { ...P.grid, topMargin: P.grid.topMargin + shift },
+    line: { ...line, top: P.line.top + shift, bottom: gridBottom + shift },
+    weekday: { ...P.weekday, y: weekdayY - shift },
+    art: { ...P.art, x: barX, align: barAlign, top: P.page.h - P.art.h / 2 - artY, color: P.bar.line1Color },
+  };
 }
 
-export const SIGN_NO_ROOM = "Строка для росписи не помещается в ячейку: сократите доп. символы номера комнаты или отступ от краёв ячейки.";
-
-export function signLayout(P, cellLeft, cellW, roomW) {
-  const roomX = cellLeft + P.sign.pad + P.room.dx;
-  return { roomX, x1: roomX + roomW + P.sign.pad, x2: cellLeft + cellW - P.sign.pad };
+export function signLayout(P, cellLeft, cellW) {
+  return {
+    roomX: cellLeft + cellW - P.sign.pad,
+    x1: cellLeft + P.sign.pad,
+    x2: cellLeft + cellW - P.sign.pad,
+  };
 }

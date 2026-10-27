@@ -3,7 +3,7 @@ import { readParams } from "./params.js";
 import {
   MONTHS_RU, getWeekdayLabel,
   parseRooms, buildFullSchedule, formatRoom,
-  calcRows, calcRowGap, signedParams, signLayout, SIGN_NO_ROOM,
+  calcRows, calcRowGap, signedParams, signLayout,
 } from "./schedule.js";
 import { labelOf } from "./fonts.js";
 import { processImage, getImageDimensions, log, clearLog, clamp } from "./utils.js";
@@ -35,12 +35,6 @@ function textXFor(align, cellLeft, cellW, dx) {
 }
 function letterSpacingEm(tracking) {
   return (Number(tracking) || 0) / 1000;
-}
-let measureCtx = null;
-function textWidthLocal(text, family, style, size, tracking) {
-  measureCtx ??= document.createElement("canvas").getContext("2d");
-  measureCtx.font = `600 ${size}px ${cssFamilyLocal(family, style)}`;
-  return measureCtx.measureText(text).width + letterSpacingEm(tracking) * size * Math.max(0, text.length - 1);
 }
 function dashAttr(dashKey) {
   const d = LINE_DASHES[dashKey];
@@ -84,14 +78,6 @@ export function buildSvgForMonth(rawP, year, month, scale, processedImages) {
   const lastDateObj = new Date(P.work.lastDate + "T00:00:00");
   if (isNaN(lastDateObj.getTime())) {
     console.warn("[buildSvg] lastDate невалидная:", P.work.lastDate);
-  }
-
-  const signRoomW = P.sign.on
-    ? Math.max(...rooms.map(r => textWidthLocal(formatRoom(r, P.room, rooms), P.room.fontFamily, P.room.fontStyle, P.room.size, P.room.tracking)))
-    : 0;
-  if (P.sign.on) {
-    const s = signLayout(P, 0, CELL_W, signRoomW);
-    if (s.x2 <= s.x1) log(SIGN_NO_ROOM, "err");
   }
 
   const schedule = buildFullSchedule(
@@ -177,17 +163,18 @@ export function buildSvgForMonth(rawP, year, month, scale, processedImages) {
       const roomFamily = isCurrent ? P.room.fontFamily : (P.room.fontFamilyOther || P.room.fontFamily);
       const roomStyle  = isCurrent ? P.room.fontStyle  : (P.room.fontStyleOther  || P.room.fontStyle);
       const roomColor  = isCurrent ? P.room.color : P.room.colorOther;
-      const roomY = yTopRoom + P.room.h / 2 + P.room.dy;
+      let roomY = yTopRoom + P.room.h / 2 + P.room.dy;
       let roomAlign = P.room.align || "center";
       let roomX = textXFor(roomAlign, x0, CELL_W, P.room.dx);
       if (P.sign.on) {
-        const sign = signLayout(P, x0, CELL_W, signRoomW);
-        roomAlign = "left";
-        roomX = sign.roomX;
-        if (isCurrent && sign.x2 > sign.x1) {
+        const sign = signLayout(P, x0, CELL_W);
+        if (isCurrent) {
           const ySign = roomY - P.room.size * 0.35;
           parts.push(`<line x1="${X(sign.x1)}" y1="${Y(ySign)}" x2="${X(sign.x2)}" y2="${Y(ySign)}" stroke="${rgbCss(P.line.color)}" stroke-width="${P.sign.w * scale}" ${dashAttr(P.sign.dash)}/>`);
         }
+        roomAlign = "right";
+        roomX = sign.roomX;
+        roomY = dateY + 0.45 * (P.date.size - P.room.size);
       }
       parts.push(`<text x="${X(roomX)}" y="${Y(roomY)}" font-family="${cssFamilyLocal(roomFamily, roomStyle)}" font-size="${P.room.size*scale}" font-weight="${isCurrent ? 600 : 300}" fill="${rgbCss(roomColor)}" letter-spacing="${letterSpacingEm(P.room.tracking)}em" text-anchor="${anchorFor(roomAlign)}" dominant-baseline="middle">${roomStr}</text>`);
     }
@@ -220,7 +207,9 @@ export function buildSvgForMonth(rawP, year, month, scale, processedImages) {
   const artW = artTextW + artPadX * 2;
   const artX = PAGE_W - artW - artRight;
   const artY = PAGE_H - artH - artTop;
-  parts.push(`<text x="${X(artX + artPadX)}" y="${Y(artY + artH/2)}" font-family="${cssFamilyLocal(P.art.fontFamily, P.art.fontStyle)}" font-size="${artSize*scale}" font-weight="600" fill="${rgbCss(P.art.color)}" letter-spacing="${letterSpacingEm(P.art.tracking)}em" opacity="${P.art.opacity}" dominant-baseline="middle">${P.art.text}</text>`);
+  const artTextX = P.art.x ?? artX + artPadX;
+  const artAnchor = anchorFor(P.art.x == null ? "left" : P.art.align);
+  parts.push(`<text x="${X(artTextX)}" y="${Y(artY + artH/2)}" font-family="${cssFamilyLocal(P.art.fontFamily, P.art.fontStyle)}" font-size="${artSize*scale}" font-weight="600" fill="${rgbCss(P.art.color)}" letter-spacing="${letterSpacingEm(P.art.tracking)}em" opacity="${P.art.opacity}" text-anchor="${artAnchor}" dominant-baseline="middle">${P.art.text}</text>`);
 
   parts.push(`</svg>`);
   const result = parts.join("");
