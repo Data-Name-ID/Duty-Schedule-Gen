@@ -378,14 +378,18 @@ export function applyVisualParams(P) {
     aol.textContent = Math.round(Number(ao.value)) + "%";
   }
 
-  updateHorizDeps();
+  updatePanelDeps();
 }
 
-export function updateHorizDeps() {
-  const chkEl = document.getElementById("pLineHoriz");
-  const deps = document.querySelector(".horizDeps");
+function toggleDeps(chkId, depsSelector) {
+  const chkEl = document.getElementById(chkId);
+  const deps = document.querySelector(depsSelector);
   if (!chkEl || !deps) return;
   deps.classList.toggle("disabled", !chkEl.checked);
+}
+
+export function updatePanelDeps() {
+  toggleDeps("pLineHoriz", ".horizDeps");
 }
 
 export function syncPageFormatSelect() {
@@ -408,5 +412,5 @@ export function initFontPickers() {
   writeAlign("weekday", "left");
   writeAlign("bar.line1", "left");
   writeAlign("bar.line2", "left");
-  updateHorizDeps();
+  updatePanelDeps();
 }

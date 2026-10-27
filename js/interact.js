@@ -5,13 +5,13 @@ import {
   loadTemplatesManifest, applyTemplateById, applyTemplateFromJson, snapshotTemplate,
   downloadTemplateFile, pickTemplateFile, handleTemplateFileInput,
 } from "./templates.js";
-import { updateHorizDeps } from "./params.js";
+import { updatePanelDeps } from "./params.js";
 import { PAGE_FORMATS, toMm } from "./config.js";
 import { applyAccentFromBar, clamp, log, showToast } from "./utils.js";
 
 export function initUI() {
   applyAccentFromBar();
-  updateHorizDeps();
+  updatePanelDeps();
 
   // --- Верхние кнопки (могут отсутствовать в HTML) ---
   const btnRefresh = document.getElementById("btnRefresh");
@@ -94,7 +94,7 @@ export function initUI() {
     panel.addEventListener("change", e => {
       if (isControlElement(e.target)) return;
       if (e.target && e.target.id === "pBarBg") applyAccentFromBar();
-      if (e.target && e.target.id === "pLineHoriz") updateHorizDeps();
+      updatePanelDeps();
       if (state.autoUpdate) render();
     });
   }
