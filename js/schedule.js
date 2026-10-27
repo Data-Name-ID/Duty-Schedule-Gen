@@ -87,39 +87,59 @@ export function calcRowGap(rows, rowGapBase, cellH) {
   return Math.max(0, (4 * rowGapBase - cellH) / 5);
 }
 
+export function gridHeight(cellH, rowGap) {
+  return 5 * cellH + 4 * rowGap;
+}
+
+export function barTextX(P, align) {
+  if (align === "right") return P.page.w - P.bar.dx;
+  if (align === "center") return P.page.w / 2;
+  return P.bar.dx;
+}
+
+export function barLineY(P) {
+  const mid = P.bar.h / 2 + P.bar.dy;
+  const gap = P.bar.line1Size * P.bar.lineGap;
+  return { y1: mid + gap / 2, y2: mid - gap / 2 };
+}
+
 export function signedParams(P) {
   if (!P.sign.on) return P;
   const size = P.date.size * P.sign.dateScale / 100;
   const date = { ...P.date, size, dy: P.date.dy + 0.45 * (P.date.size - size), align: "left", dx: P.sign.pad };
-  const line = { ...P.line, horiz: false, opacity: 0.3 };
-  const sideMargin = Math.max(P.grid.sideMargin, P.sign.safe);
-  if (P.weekday.y >= P.page.h - P.grid.topMargin) return { ...P, date, line, grid: { ...P.grid, sideMargin } };
-  const gridBottom = P.grid.topMargin + 5 * (P.date.h + P.room.h) + 4 * P.grid.rowGap;
+  const room = {
+    ...P.room, align: "right", dx: -P.sign.pad,
+    dy: P.date.h / 2 + date.dy - P.room.h / 2 + 0.45 * (size - P.room.size),
+  };
+  const sign = { ...P.sign, lineY: P.date.h - P.room.h / 2 - P.room.dy + 0.35 * P.room.size };
+  const base = {
+    ...P, date, room, sign,
+    line: { ...P.line, horiz: false, opacity: 0.3 },
+    grid: { ...P.grid, sideMargin: Math.max(P.grid.sideMargin, P.sign.safe) },
+  };
+  if (P.weekday.y >= P.page.h - P.grid.topMargin) return base;
+
+  const gridBottom = P.grid.topMargin + gridHeight(P.date.h + P.room.h, P.grid.rowGap);
   const weekdayY = P.page.h - P.grid.topMargin - date.h / 2 + date.dy + 0.45 * size + P.weekday.size;
   const spaceAbove = P.page.h - weekdayY - 0.7 * P.weekday.size;
   const spaceBelow = P.page.h - P.bar.h - gridBottom;
   const margin = (spaceAbove + spaceBelow) / 4;
   const marginTop = Math.max(margin, P.sign.safe + P.sign.pad);
   const shift = marginTop - spaceAbove;
-  const rowGap = P.grid.rowGap + (spaceAbove + spaceBelow - marginTop - margin) / 4;
-  const barAlign = P.bar.line2Align || "left";
-  const barX = barAlign === "right" ? P.page.w - P.bar.dx : barAlign === "center" ? P.page.w / 2 : P.bar.dx;
-  const line2Y = P.bar.h / 2 + P.bar.dy - P.bar.line1Size * P.bar.lineGap / 2;
-  const artY = Math.max(P.art.size, line2Y - 0.6 * P.bar.line2Size - 0.6 * P.art.size);
+  const align = P.bar.line2Align || "left";
   return {
-    ...P,
-    date,
-    grid: { ...P.grid, topMargin: P.grid.topMargin + shift, rowGap, sideMargin },
-    line: { ...line, top: P.line.top + shift, bottom: P.page.h - P.bar.h - margin },
+    ...base,
+    grid: {
+      ...base.grid,
+      topMargin: P.grid.topMargin + shift,
+      rowGap: P.grid.rowGap + (spaceAbove + spaceBelow - marginTop - margin) / 4,
+    },
+    line: { ...base.line, top: P.line.top + shift, bottom: P.page.h - P.bar.h - margin },
     weekday: { ...P.weekday, y: weekdayY - shift },
-    art: { ...P.art, x: barX, align: barAlign, top: P.page.h - P.art.h / 2 - artY, color: P.bar.line1Color },
-  };
-}
-
-export function signLayout(P, cellLeft, cellW) {
-  return {
-    roomX: cellLeft + cellW - P.sign.pad,
-    x1: cellLeft + P.sign.pad,
-    x2: cellLeft + cellW - P.sign.pad,
+    art: {
+      ...P.art, align, color: P.bar.line1Color,
+      x: barTextX(P, align),
+      cy: Math.max(P.art.size, barLineY(P).y2 - 0.6 * P.bar.line2Size - 0.6 * P.art.size),
+    },
   };
 }

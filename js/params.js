@@ -1,6 +1,7 @@
 import { toPt, formatKeyOf } from "./config.js";
 import { clamp } from "./utils.js";
 import { FONTS, listFontStylesByFamily } from "./fonts.js";
+import { signedParams } from "./schedule.js";
 
 function num(id, fallback = 0) {
   const el = document.getElementById(id);
@@ -160,7 +161,7 @@ export function readWorkParams() {
 }
 
 export function readParams() {
-  return { ...readVisualParams(), work: readWorkParams() };
+  return signedParams({ ...readVisualParams(), work: readWorkParams() });
 }
 
 function setNum(id, v) { const el = document.getElementById(id); if (el && v != null && isFinite(v)) el.value = v; }
