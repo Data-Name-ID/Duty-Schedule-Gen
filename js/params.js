@@ -378,8 +378,8 @@ export function applyVisualParams(P) {
     setNum("pLineHorizPad", P.line.horizPad);
   }
 
+  setChk("pSignOn", P.sign?.on);
   if (P.sign) {
-    setChk("pSignOn", P.sign.on);
     setNum("pSignDateScale", P.sign.dateScale);
     setNum("pSignPad", P.sign.pad);
     setNum("pSignW", P.sign.w);

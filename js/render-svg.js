@@ -192,7 +192,7 @@ export function buildSvgForMonth(rawP, year, month, scale, processedImages) {
 
   for (let c = 1; c < COLS; c++) {
     const xLine = P.grid.sideMargin + c * (CELL_W + P.grid.colGap) - P.grid.colGap / 2;
-    parts.push(`<line x1="${X(xLine)}" y1="${Y(PAGE_H - P.line.top)}" x2="${X(xLine)}" y2="${Y(PAGE_H - P.line.bottom)}" stroke="${rgbCss(P.line.color)}" stroke-width="${P.line.w * scale}" ${dashAttr(P.line.dash)}/>`);
+    parts.push(`<line x1="${X(xLine)}" y1="${Y(PAGE_H - P.line.top)}" x2="${X(xLine)}" y2="${Y(PAGE_H - P.line.bottom)}" stroke="${rgbCss(P.line.color)}" stroke-opacity="${P.line.opacity ?? 1}" stroke-width="${P.line.w * scale}" ${dashAttr(P.line.dash)}/>`);
   }
 
   if (P.line.horiz) {

@@ -246,6 +246,7 @@ export async function exportPdf() {
           end:   { x: xLine, y: PAGE_H - P.line.top },
           thickness: P.line.w,
           color: rgb(P.line.color.r, P.line.color.g, P.line.color.b),
+          opacity: P.line.opacity ?? 1,
           dashArray: pdfDash(P.line.dash, P.line.w),
         });
       }
