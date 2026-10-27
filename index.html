@@ -120,7 +120,7 @@
 
         <div class="hint" style="margin-top:8px">4. Роспись дежурных</div>
         <div class="field"><label>Строка для росписи</label><input type="checkbox" id="pSignOn"></div>
-        <div class="hint">Дата прижмётся к левому краю ячейки, номер комнаты — к правому, а внизу каждого дня месяца появится линия, на которой дежурный расписывается. Даты станут немного меньше, чтобы освободить место, а дни недели переедут из-под сетки наверх. Настройки — в «Дополнительных настройках дизайна».</div>
+        <div class="hint">Внизу ячейки каждого дня месяца появится линия, на которой дежурный расписывается. Дата уменьшится и встанет в левый верхний угол ячейки, номер комнаты — в правый, дни недели переедут над сеткой, ссылка на канал создателя — под месяц и год на нижней плашке. Горизонтальные линии сетки скроются, разделительные станут бледнее. Настройки — «Дополнительные настройки дизайна» → «Строка для росписи (дизайн)».</div>
       </div>
     </details>
 
@@ -254,17 +254,11 @@
         <details>
           <summary>Строка для росписи (дизайн)</summary>
           <div class="details-body">
-            <div class="hint">Включается в «Основных настройках», пункт 4.</div>
+            <div class="hint">Поля ниже работают, когда в «Основных настройках» (пункт 4) включена галочка «Строка для росписи».</div>
             <div class="signDeps">
-              <div class="field"><label>Размер дат</label><input type="number" id="pSignDateScale" value="70" step="5" min="30" max="100"><span class="unit">%</span></div>
-              <div class="hint">Чем меньше даты, тем больше места для росписи: верх цифр остаётся на месте, освобождается место под ними.</div>
-              <div class="field"><label>Отступ от краёв ячейки</label><input type="number" id="pSignPad" value="4" step="0.5" min="0"><span class="unit">мм</span></div>
-              <div class="hint">От краёв ячейки до даты, номера комнаты и линии.</div>
-              <div class="field"><label>Безопасный отступ печати</label><input type="number" id="pSignSafe" value="5" step="0.5" min="0"><span class="unit">мм</span></div>
-              <div class="hint">Календарь не подходит к краям листа ближе этого расстояния — принтер не обрежет даты и дни недели.</div>
-              <div class="hint">Цвет — как у разделительных линий (раздел «Сетка»).</div>
-              <div class="field"><label>Толщина</label><input type="number" id="pSignW" value="0.3" step="0.05" min="0"><span class="unit">мм</span></div>
-              <div class="field"><label>Тип</label>
+              <div class="hint">Линия для росписи</div>
+              <div class="field"><label>Толщина линии</label><input type="number" id="pSignW" value="0.3" step="0.05" min="0"><span class="unit">мм</span></div>
+              <div class="field"><label>Тип линии</label>
                 <select id="pSignDash">
                   <option value="solid" selected>Сплошная</option>
                   <option value="dashed">Пунктир</option>
@@ -273,6 +267,16 @@
                   <option value="dashdotdot">Штрих-две точки</option>
                 </select>
               </div>
+              <div class="hint">Цвет — поле «Цвет» в «Сетке»; разделительные линии в этом режиме бледнее. Высоту линии в ячейке задают «Высота» и «Смещение Y» в «Номерах комнат (дизайн)»: линия идёт там, где без росписи стоял бы номер.</div>
+
+              <div class="hint" style="margin-top:12px">Раскладка</div>
+              <div class="field"><label>Размер дат</label><input type="number" id="pSignDateScale" value="70" step="5" min="30" max="100"><span class="unit">%</span></div>
+              <div class="hint">От «Размера» в «Датах (дизайн)». Верх цифр остаётся на месте, место под ними уходит под роспись.</div>
+              <div class="field"><label>Отступ от краёв ячейки</label><input type="number" id="pSignPad" value="4" step="0.5" min="0"><span class="unit">мм</span></div>
+              <div class="hint">Слева и справа: от края ячейки до даты, номера комнаты и концов линии.</div>
+              <div class="field"><label>Поля печати</label><input type="number" id="pSignSafe" value="5" step="0.5" min="0"><span class="unit">мм</span></div>
+              <div class="hint">Сетка не подходит к левому, правому и верхнему краю листа ближе этого расстояния, чтобы принтер не обрезал даты, номера и дни недели. Если «Отступ слева/справа» в «Сетке» больше, действует он. Нижняя плашка по-прежнему печатается до края.</div>
+              <div class="hint">В этом режиме раскладку листа программа считает сама, поэтому не действуют: выравнивание и «Смещение X» дат и номеров комнат и «Горизонтальные линии». Если дни недели стояли под сеткой — ещё «Отступ сверху» и «Низ» линий в «Сетке», «Базовая Y» дней недели, положение и цвет ссылки на канал создателя.</div>
             </div>
           </div>
         </details>
