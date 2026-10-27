@@ -86,3 +86,16 @@ export function calcRowGap(rows, rowGapBase, cellH) {
   if (rows <= 5) return rowGapBase;
   return Math.max(0, (4 * rowGapBase - cellH) / 5);
 }
+
+export function signedParams(P) {
+  if (!P.sign.on) return P;
+  const size = P.date.size * P.sign.dateScale / 100;
+  return { ...P, date: { ...P.date, size, dy: P.date.dy + 0.45 * (P.date.size - size) } };
+}
+
+export const SIGN_NO_ROOM = "Строка для росписи не помещается в ячейку: сократите доп. символы номера комнаты или отступ от краёв ячейки.";
+
+export function signLayout(P, cellLeft, cellW, roomW) {
+  const roomX = cellLeft + P.sign.pad + P.room.dx;
+  return { roomX, x1: roomX + roomW + P.sign.pad, x2: cellLeft + cellW - P.sign.pad };
+}

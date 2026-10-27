@@ -135,6 +135,13 @@ export function readVisualParams() {
       horizDash: str("pLineHorizDash", "solid"),
       horizPad: mmv("pLineHorizPad"),
     },
+    sign: {
+      on: chk("pSignOn"),
+      dateScale: clamp(num("pSignDateScale", 100), 30, 100),
+      pad: mmv("pSignPad"),
+      w: mmv("pSignW"),
+      dash: str("pSignDash", "solid"),
+    },
   };
 }
 
@@ -371,6 +378,14 @@ export function applyVisualParams(P) {
     setNum("pLineHorizPad", P.line.horizPad);
   }
 
+  if (P.sign) {
+    setChk("pSignOn", P.sign.on);
+    setNum("pSignDateScale", P.sign.dateScale);
+    setNum("pSignPad", P.sign.pad);
+    setNum("pSignW", P.sign.w);
+    setStr("pSignDash", P.sign.dash || "solid");
+  }
+
   const ao = document.getElementById("pArtOpacity");
   const aol = document.getElementById("pArtOpacityVal");
   if (ao && aol) {
@@ -390,6 +405,7 @@ function toggleDeps(chkId, depsSelector) {
 
 export function updatePanelDeps() {
   toggleDeps("pLineHoriz", ".horizDeps");
+  toggleDeps("pSignOn", ".signDeps");
 }
 
 export function syncPageFormatSelect() {

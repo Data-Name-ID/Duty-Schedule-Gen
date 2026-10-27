@@ -33,7 +33,8 @@ details[open] summary { border-bottom: 1px solid #eee; border-radius: 6px 6px 0 
 .row2 > div { flex: 1; }
 
 /* Группа зависимых полей (например, горизонтальные линии) */
-.horizDeps.disabled {
+.horizDeps.disabled,
+.signDeps.disabled {
   opacity: 0.45;
   pointer-events: none;
 }

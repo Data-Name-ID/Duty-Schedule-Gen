@@ -67,6 +67,10 @@ export function snapshotTemplate() {
       horiz: V.line.horiz, horizW: toMm(V.line.horizW), horizDash: V.line.horizDash,
       horizPad: toMm(V.line.horizPad),
     },
+    sign: {
+      on: V.sign.on, dateScale: V.sign.dateScale, pad: toMm(V.sign.pad),
+      w: toMm(V.sign.w), dash: V.sign.dash,
+    },
     images: state.images.map(im => ({
       id: im.id, name: im.name, file: im.file || null,
       x: im.x, y: im.y, scale: im.scale, baseW: im.baseW,

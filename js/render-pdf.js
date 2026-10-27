@@ -3,7 +3,7 @@ import { readParams } from "./params.js";
 import {
   MONTHS_RU, getWeekdayLabel,
   parseRooms, buildFullSchedule, formatRoom,
-  calcRows, calcRowGap,
+  calcRows, calcRowGap, signedParams, signLayout, SIGN_NO_ROOM,
 } from "./schedule.js";
 import { FONTS, getFontBytes } from "./fonts.js";
 import {
@@ -33,7 +33,7 @@ export async function exportPdf() {
   progressStart();
   overlayShow("Готовим PDF…", "Загрузка шрифтов");
   try {
-    const P = readParams();
+    const P = signedParams(readParams());
     const rooms = parseRooms(P.work.rooms);
     if (!rooms.length) { log("Нет комнат", "err"); return; }
 
@@ -133,6 +133,14 @@ export async function exportPdf() {
       page.drawText(text, { x, y, size, font, color, characterSpacing: cs });
     }
 
+    const signRoomW = P.sign.on
+      ? Math.max(...rooms.map(r => textWidth(fontRoom, formatRoom(r, P.room, rooms), P.room.size, P.room.tracking)))
+      : 0;
+    if (P.sign.on) {
+      const s = signLayout(P, 0, CELL_W, signRoomW);
+      if (s.x2 <= s.x1) log(SIGN_NO_ROOM, "err");
+    }
+
     for (let idx = fromIdx; idx <= toIdx; idx++) {
       const year  = Math.floor(idx / 12);
       const month = idx % 12;
@@ -201,13 +209,28 @@ export async function exportPdf() {
         const room = schedule.get(key);
         if (room !== undefined) {
           const roomStr = formatRoom(room, P.room, rooms);
-          const roomAlign  = P.room.align || "center";
           const roomFont   = isCurrent ? fontRoom : fontRoomOther;
           const roomColor  = isCurrent ? P.room.color : P.room.colorOther;
           const roomY      = yTopRoom + P.room.h/2 + P.room.dy - P.room.size * 0.35;
+          let roomAlign = P.room.align || "center";
+          let roomLeft  = x0 + P.room.dx;
+          if (P.sign.on) {
+            const sign = signLayout(P, x0, CELL_W, signRoomW);
+            roomAlign = "left";
+            roomLeft = sign.roomX;
+            if (isCurrent && sign.x2 > sign.x1) {
+              page.drawLine({
+                start: { x: sign.x1, y: roomY },
+                end:   { x: sign.x2, y: roomY },
+                thickness: P.sign.w,
+                color: rgb(P.line.color.r, P.line.color.g, P.line.color.b),
+                dashArray: pdfDash(P.sign.dash, P.sign.w),
+              });
+            }
+          }
           drawAligned(page, roomFont, roomStr, P.room.size, P.room.tracking,
             rgb(roomColor.r, roomColor.g, roomColor.b),
-            x0 + P.room.dx, x0 + CELL_W + P.room.dx, roomY, roomAlign);
+            roomLeft, x0 + CELL_W + P.room.dx, roomY, roomAlign);
         }
       }
 

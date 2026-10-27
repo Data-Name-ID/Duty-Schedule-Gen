@@ -24,7 +24,7 @@ export function formatKeyOf(w, h) {
 }
 
 export const TEMPLATE_KEYS = [
-  "page", "grid", "date", "room", "bar", "art", "weekday", "line", "images"
+  "page", "grid", "date", "room", "bar", "art", "weekday", "line", "sign", "images"
 ];
 
 export const LINE_DASHES = {

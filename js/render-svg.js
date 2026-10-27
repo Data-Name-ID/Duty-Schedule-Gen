@@ -3,7 +3,7 @@ import { readParams } from "./params.js";
 import {
   MONTHS_RU, getWeekdayLabel,
   parseRooms, buildFullSchedule, formatRoom,
-  calcRows, calcRowGap,
+  calcRows, calcRowGap, signedParams, signLayout, SIGN_NO_ROOM,
 } from "./schedule.js";
 import { labelOf } from "./fonts.js";
 import { processImage, getImageDimensions, log, clearLog, clamp } from "./utils.js";
@@ -36,13 +36,20 @@ function textXFor(align, cellLeft, cellW, dx) {
 function letterSpacingEm(tracking) {
   return (Number(tracking) || 0) / 1000;
 }
+let measureCtx = null;
+function textWidthLocal(text, family, style, size, tracking) {
+  measureCtx ??= document.createElement("canvas").getContext("2d");
+  measureCtx.font = `600 ${size}px ${cssFamilyLocal(family, style)}`;
+  return measureCtx.measureText(text).width + letterSpacingEm(tracking) * size * Math.max(0, text.length - 1);
+}
 function dashAttr(dashKey) {
   const d = LINE_DASHES[dashKey];
   if (!d || !d.dash) return "";
   return `stroke-dasharray="${d.dash.join(",")}"`;
 }
 
-export function buildSvgForMonth(P, year, month, scale, processedImages) {
+export function buildSvgForMonth(rawP, year, month, scale, processedImages) {
+  const P = signedParams(rawP);
   console.log("[buildSvg] START", { year, month, scale });
 
   const PAGE_W = P.page.w, PAGE_H = P.page.h;
@@ -77,6 +84,14 @@ export function buildSvgForMonth(P, year, month, scale, processedImages) {
   const lastDateObj = new Date(P.work.lastDate + "T00:00:00");
   if (isNaN(lastDateObj.getTime())) {
     console.warn("[buildSvg] lastDate невалидная:", P.work.lastDate);
+  }
+
+  const signRoomW = P.sign.on
+    ? Math.max(...rooms.map(r => textWidthLocal(formatRoom(r, P.room, rooms), P.room.fontFamily, P.room.fontStyle, P.room.size, P.room.tracking)))
+    : 0;
+  if (P.sign.on) {
+    const s = signLayout(P, 0, CELL_W, signRoomW);
+    if (s.x2 <= s.x1) log(SIGN_NO_ROOM, "err");
   }
 
   const schedule = buildFullSchedule(
@@ -161,10 +176,19 @@ export function buildSvgForMonth(P, year, month, scale, processedImages) {
       const roomStr = formatRoom(room, P.room, rooms);
       const roomFamily = isCurrent ? P.room.fontFamily : (P.room.fontFamilyOther || P.room.fontFamily);
       const roomStyle  = isCurrent ? P.room.fontStyle  : (P.room.fontStyleOther  || P.room.fontStyle);
-      const roomAlign  = P.room.align || "center";
       const roomColor  = isCurrent ? P.room.color : P.room.colorOther;
-      const roomX = textXFor(roomAlign, x0, CELL_W, P.room.dx);
       const roomY = yTopRoom + P.room.h / 2 + P.room.dy;
+      let roomAlign = P.room.align || "center";
+      let roomX = textXFor(roomAlign, x0, CELL_W, P.room.dx);
+      if (P.sign.on) {
+        const sign = signLayout(P, x0, CELL_W, signRoomW);
+        roomAlign = "left";
+        roomX = sign.roomX;
+        if (isCurrent && sign.x2 > sign.x1) {
+          const ySign = roomY - P.room.size * 0.35;
+          parts.push(`<line x1="${X(sign.x1)}" y1="${Y(ySign)}" x2="${X(sign.x2)}" y2="${Y(ySign)}" stroke="${rgbCss(P.line.color)}" stroke-width="${P.sign.w * scale}" ${dashAttr(P.sign.dash)}/>`);
+        }
+      }
       parts.push(`<text x="${X(roomX)}" y="${Y(roomY)}" font-family="${cssFamilyLocal(roomFamily, roomStyle)}" font-size="${P.room.size*scale}" font-weight="${isCurrent ? 600 : 300}" fill="${rgbCss(roomColor)}" letter-spacing="${letterSpacingEm(P.room.tracking)}em" text-anchor="${anchorFor(roomAlign)}" dominant-baseline="middle">${roomStr}</text>`);
     }
   }
