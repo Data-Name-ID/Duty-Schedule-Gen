@@ -139,6 +139,7 @@ export function readVisualParams() {
       on: chk("pSignOn"),
       dateScale: clamp(num("pSignDateScale", 100), 30, 100),
       pad: mmv("pSignPad"),
+      safe: Math.max(0, mmv("pSignSafe")),
       w: mmv("pSignW"),
       dash: str("pSignDash", "solid"),
     },
@@ -382,6 +383,7 @@ export function applyVisualParams(P) {
   if (P.sign) {
     setNum("pSignDateScale", P.sign.dateScale);
     setNum("pSignPad", P.sign.pad);
+    setNum("pSignSafe", P.sign.safe);
     setNum("pSignW", P.sign.w);
     setStr("pSignDash", P.sign.dash || "solid");
   }

@@ -92,14 +92,16 @@ export function signedParams(P) {
   const size = P.date.size * P.sign.dateScale / 100;
   const date = { ...P.date, size, dy: P.date.dy + 0.45 * (P.date.size - size), align: "left", dx: P.sign.pad };
   const line = { ...P.line, horiz: false, opacity: 0.3 };
-  if (P.weekday.y >= P.page.h - P.grid.topMargin) return { ...P, date, line };
+  const sideMargin = Math.max(P.grid.sideMargin, P.sign.safe);
+  if (P.weekday.y >= P.page.h - P.grid.topMargin) return { ...P, date, line, grid: { ...P.grid, sideMargin } };
   const gridBottom = P.grid.topMargin + 5 * (P.date.h + P.room.h) + 4 * P.grid.rowGap;
   const weekdayY = P.page.h - P.grid.topMargin - date.h / 2 + date.dy + 0.45 * size + P.weekday.size;
   const spaceAbove = P.page.h - weekdayY - 0.7 * P.weekday.size;
   const spaceBelow = P.page.h - P.bar.h - gridBottom;
   const margin = (spaceAbove + spaceBelow) / 4;
-  const shift = margin - spaceAbove;
-  const rowGap = P.grid.rowGap + margin / 2;
+  const marginTop = Math.max(margin, P.sign.safe + P.sign.pad);
+  const shift = marginTop - spaceAbove;
+  const rowGap = P.grid.rowGap + (spaceAbove + spaceBelow - marginTop - margin) / 4;
   const barAlign = P.bar.line2Align || "left";
   const barX = barAlign === "right" ? P.page.w - P.bar.dx : barAlign === "center" ? P.page.w / 2 : P.bar.dx;
   const line2Y = P.bar.h / 2 + P.bar.dy - P.bar.line1Size * P.bar.lineGap / 2;
@@ -107,7 +109,7 @@ export function signedParams(P) {
   return {
     ...P,
     date,
-    grid: { ...P.grid, topMargin: P.grid.topMargin + shift, rowGap },
+    grid: { ...P.grid, topMargin: P.grid.topMargin + shift, rowGap, sideMargin },
     line: { ...line, top: P.line.top + shift, bottom: P.page.h - P.bar.h - margin },
     weekday: { ...P.weekday, y: weekdayY - shift },
     art: { ...P.art, x: barX, align: barAlign, top: P.page.h - P.art.h / 2 - artY, color: P.bar.line1Color },

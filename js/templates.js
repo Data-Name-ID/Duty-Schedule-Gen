@@ -68,7 +68,7 @@ export function snapshotTemplate() {
       horizPad: toMm(V.line.horizPad),
     },
     sign: {
-      on: V.sign.on, dateScale: V.sign.dateScale, pad: toMm(V.sign.pad),
+      on: V.sign.on, dateScale: V.sign.dateScale, pad: toMm(V.sign.pad), safe: toMm(V.sign.safe),
       w: toMm(V.sign.w), dash: V.sign.dash,
     },
     images: state.images.map(im => ({
