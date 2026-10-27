@@ -27,6 +27,12 @@ function pdfDash(dashKey, thickness) {
   if (!d || !d.dash) return undefined;
   return d.dash.map(v => v * Math.max(thickness, 0.3));
 }
+function baselineFromMiddle(font, middleY, size) {
+  if (!font) return middleY;
+  const f = font.embedder.font;
+  const xHeight = f.unitsPerEm ? f.xHeight / f.unitsPerEm : f.XHeight / 1000;
+  return middleY - size * xHeight / 2;
+}
 function drawRule(page, x1, y1, x2, y2, color, thickness, dash, opacity = 1) {
   page.drawLine({
     start: { x: x1, y: y1 },
@@ -179,11 +185,11 @@ export async function exportPdf() {
       const barLeft = P.bar.dx, barRight = PAGE_W - P.bar.dx;
       drawAligned(page, fontBarLine1, P.bar.line1, P.bar.line1Size, P.bar.line1Tracking,
         rgb(P.bar.line1Color.r, P.bar.line1Color.g, P.bar.line1Color.b),
-        barLeft, barRight, y1 - P.bar.line1Size * 0.35, P.bar.line1Align);
+        barLeft, barRight, baselineFromMiddle(fontBarLine1, y1, P.bar.line1Size), P.bar.line1Align);
       const line2Text = P.bar.line2.replace(/МЕСЯЦ/g, MONTHS_RU[month]).replace(/ГОД/g, String(year));
       drawAligned(page, fontBarLine2, line2Text, P.bar.line2Size, P.bar.line2Tracking,
         rgb(P.bar.line2Color.r, P.bar.line2Color.g, P.bar.line2Color.b),
-        barLeft, barRight, y2 - P.bar.line2Size * 0.35, P.bar.line2Align);
+        barLeft, barRight, baselineFromMiddle(fontBarLine2, y2, P.bar.line2Size), P.bar.line2Align);
 
       for (let i = 0; i < ROWS * COLS; i++) {
         const cellDate = new Date(gridStart); cellDate.setDate(gridStart.getDate() + i);
@@ -197,7 +203,7 @@ export async function exportPdf() {
         const dateAlign  = P.date.align || "center";
         const dateFont   = isCurrent ? fontDate : fontDateOther;
         const dateColor  = isCurrent ? P.date.color : P.date.colorOther;
-        const dateY      = yTopDate - P.date.h/2 + P.date.dy - P.date.size * 0.35;
+        const dateY      = baselineFromMiddle(dateFont, yTopDate - P.date.h/2 + P.date.dy, P.date.size);
         drawAligned(page, dateFont, dateStr, P.date.size, P.date.tracking,
           rgb(dateColor.r, dateColor.g, dateColor.b),
           x0 + P.date.dx, x0 + CELL_W + P.date.dx, dateY, dateAlign);
@@ -211,7 +217,7 @@ export async function exportPdf() {
           const roomFont   = isCurrent ? fontRoom : fontRoomOther;
           const roomAlign  = P.room.align || "center";
           const roomColor  = isCurrent ? P.room.color : P.room.colorOther;
-          const roomY      = yTopRoom + P.room.h/2 + P.room.dy - P.room.size * 0.35;
+          const roomY      = baselineFromMiddle(roomFont, yTopRoom + P.room.h/2 + P.room.dy, P.room.size);
           if (P.sign.on && isCurrent) {
             const ySign = yTopDate - P.sign.lineY;
             drawRule(page, x0 + P.sign.pad, ySign, x0 + CELL_W - P.sign.pad, ySign, P.line.color, P.sign.w, P.sign.dash);
@@ -252,7 +258,7 @@ export async function exportPdf() {
         const artCy = P.art.cy ?? PAGE_H - artTop - artH / 2;
         drawAligned(page, fontArt, P.art.text, artSize, P.art.tracking,
           rgb(P.art.color.r, P.art.color.g, P.art.color.b),
-          artTextX, artTextX, artCy - artSize * 0.35, P.art.align, P.art.opacity);
+          artTextX, artTextX, baselineFromMiddle(fontArt, artCy, artSize), P.art.align, P.art.opacity);
       }
 
       pageDone++;
